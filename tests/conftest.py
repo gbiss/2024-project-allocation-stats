@@ -87,7 +87,7 @@ def global_constraints(
 
 
 @pytest.fixture
-def renaissance(
+def student(
     schedule: list[ScheduleItem],
     global_constraints: list[LinearConstraint],
     course: Course,

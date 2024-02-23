@@ -40,6 +40,7 @@ class SingleTopicSurvey(BaseSurvey):
             responses (list[int]): Student survey responses
             limit (int): Total courses desired
         """
-        self.schedule = schedule
-        self.response = responses
+        self.course_response_map = {
+            schedule[i]: responses[i] for i in range(len(schedule))
+        }
         self.limit = limit
