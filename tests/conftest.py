@@ -1,6 +1,12 @@
 import pytest
 from fair.feature import BaseFeature, Course, Weekday, Section, Slot
 from fair.item import ScheduleItem
+from fair.constraint import (
+    CourseTimeConstraint,
+    LinearConstraint,
+    MutualExclusivityConstraint,
+)
+from fair.simulation import RenaissanceMan
 
 
 @pytest.fixture
@@ -59,9 +65,40 @@ def schedule_item611(features: list[BaseFeature]):
 
 
 @pytest.fixture
-def all_items(
+def schedule(
     schedule_item250: ScheduleItem,
     schedule_item301: ScheduleItem,
     schedule_item611: ScheduleItem,
 ):
     return [schedule_item250, schedule_item301, schedule_item611]
+
+
+@pytest.fixture
+def global_constraints(
+    schedule: list[ScheduleItem],
+    course: Course,
+    slot: Slot,
+    weekday: Weekday,
+):
+    course_time_constr = CourseTimeConstraint.from_items(schedule, slot, weekday)
+    course_sect_constr = MutualExclusivityConstraint.from_items(schedule, course)
+
+    return [course_time_constr, course_sect_constr]
+
+
+@pytest.fixture
+def renaissance(
+    schedule: list[ScheduleItem],
+    global_constraints: list[LinearConstraint],
+    course: Course,
+):
+    return RenaissanceMan(
+        [["250", "301"]],
+        [1],
+        1,
+        1,
+        course,
+        global_constraints,
+        schedule,
+        seed=0,
+    )

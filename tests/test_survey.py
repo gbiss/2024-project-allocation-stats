@@ -1,8 +1,7 @@
 from fair.item import ScheduleItem
-from fair_stats.survey import Survey
+from fair.simulation import RenaissanceMan
+from fair_stats.survey import SingleTopicSurvey
 
 
-def test_survey(all_items: list[ScheduleItem]):
-    responses = [0, 3, 6]
-    limit = 2
-    Survey(all_items, responses, limit)
+def test_single_topic_survey(schedule: list[ScheduleItem], renaissance: RenaissanceMan):
+    survey = SingleTopicSurvey.from_student(schedule, renaissance)
