@@ -40,7 +40,31 @@ class SingleTopicSurvey(BaseSurvey):
             responses (list[int]): Student survey responses
             limit (int): Total courses desired
         """
-        self.course_response_map = {
-            schedule[i]: responses[i] for i in range(len(schedule))
-        }
+        self.response_map = {schedule[i]: responses[i] for i in range(len(schedule))}
         self.limit = limit
+
+
+class Corpus:
+    """A collection of surveys"""
+
+    def __init__(self, surveys: list[BaseSurvey]):
+        """
+        Args:
+            surveys (list[BaseSurvey]): Survey list
+        """
+        self.surveys = surveys
+
+    def _valid(self):
+        """Schedule items in surveys must match
+
+        Returns:
+            bool: True if schedule items match, False otherwise
+        """
+        if len(self.surveys) < 1:
+            return False
+
+        survey_items_list = [
+            {item for item in survey.response_map.keys()} for survey in self.surveys
+        ]
+
+        return len(set.union(*survey_items_list)) == len(self.surveys[0].response_map)

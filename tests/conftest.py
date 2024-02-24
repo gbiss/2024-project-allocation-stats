@@ -74,6 +74,15 @@ def schedule(
 
 
 @pytest.fixture
+def schedule2(
+    schedule_item250_2: ScheduleItem,
+    schedule_item301: ScheduleItem,
+    schedule_item611: ScheduleItem,
+):
+    return [schedule_item250_2, schedule_item301, schedule_item611]
+
+
+@pytest.fixture
 def global_constraints(
     schedule: list[ScheduleItem],
     course: Course,
@@ -101,4 +110,40 @@ def student(
         global_constraints,
         schedule,
         seed=0,
+    )
+
+
+@pytest.fixture
+def student2(
+    schedule: list[ScheduleItem],
+    global_constraints: list[LinearConstraint],
+    course: Course,
+):
+    return RenaissanceMan(
+        [["301", "611"]],
+        [1],
+        1,
+        1,
+        course,
+        global_constraints,
+        schedule,
+        seed=1,
+    )
+
+
+@pytest.fixture
+def student3(
+    schedule2: list[ScheduleItem],
+    global_constraints: list[LinearConstraint],
+    course: Course,
+):
+    return RenaissanceMan(
+        [["250", "301"]],
+        [1],
+        1,
+        1,
+        course,
+        global_constraints,
+        schedule2,
+        seed=2,
     )
