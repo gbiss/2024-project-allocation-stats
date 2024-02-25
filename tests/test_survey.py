@@ -1,5 +1,6 @@
 from fair.item import ScheduleItem
 from fair.simulation import RenaissanceMan
+import numpy as np
 from fair_stats.survey import Corpus, SingleTopicSurvey
 from fair.feature import Course
 
@@ -8,14 +9,13 @@ def test_single_topic_survey(
     schedule: list[ScheduleItem], student: RenaissanceMan, course: Course
 ):
     survey = SingleTopicSurvey.from_student(schedule, student)
+    preference_mask = [
+        item.value(course) in student.preferred_courses for item in schedule
+    ]
 
     assert survey.limit == student.total_courses
-
-    for item in schedule:
-        if item.value(course) in student.preferred_courses:
-            assert survey.response_map[item] == 1
-        else:
-            assert survey.response_map[item] == 0
+    assert [survey.response_map[item] for item in schedule] == preference_mask
+    assert np.array_equal(survey.data(), np.array(preference_mask))
 
 
 def test_corpus_validation(

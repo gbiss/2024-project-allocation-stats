@@ -40,4 +40,5 @@ dependencies = [
                 "pdoc>=14.1.0",
                 "pytest>=7.4.3",
                 "fair@git+https://github.com/gbiss/2023-project-fair",
+                "numpy>=1.26.4",
                ]

@@ -1,5 +1,6 @@
 from fair.item import ScheduleItem
 from fair.simulation import RenaissanceMan
+import numpy as np
 
 
 class BaseSurvey:
@@ -40,8 +41,17 @@ class SingleTopicSurvey(BaseSurvey):
             responses (list[int]): Student survey responses
             limit (int): Total courses desired
         """
+        self.schedule = schedule
         self.response_map = {schedule[i]: responses[i] for i in range(len(schedule))}
         self.limit = limit
+
+    def data(self) -> np.ndarray:
+        """Create data vector from responses
+
+        Returns:
+            np.ndarray: Vector of responses
+        """
+        return np.array([self.response_map[item] for item in self.schedule])
 
 
 class Corpus:
