@@ -73,8 +73,12 @@ class Corpus:
         if len(self.surveys) < 1:
             return False
 
-        survey_items_list = [
-            {item for item in survey.response_map.keys()} for survey in self.surveys
-        ]
+        base = self.surveys[0]
+        for survey in self.surveys[1:]:
+            if len(base.schedule) != len(survey.schedule):
+                return False
+            for i in range(len(base.schedule)):
+                if base.schedule[i] != survey.schedule[i]:
+                    return False
 
-        return len(set.union(*survey_items_list)) == len(self.surveys[0].response_map)
+        return True
