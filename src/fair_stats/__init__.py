@@ -3,6 +3,28 @@ import numpy as np
 from fair_stats.survey import Corpus
 
 
+def aggregate(bernoullis: list[np.ndarray], H: np.ndarray) -> np.ndarray:
+    """d vector
+
+    A vector of categorical aggregates for m variables over n trials.
+
+    Args:
+        bernoullis (list[np.ndarray]): n X m matrix of Bernoulli variates
+        H (np.ndarray): m-dimensional transformation matrix (bit vector to categorical)
+
+    Returns:
+        np.ndarray: 2**m entries, each a count of configurations of m variable outomes
+    """
+    n, m = bernoullis.shape
+    w = 2**m
+    d = np.zeros((1, w))
+    for row in range(n):
+        h_index = np.where((H == bernoullis[row][:, None]).all(axis=0))[0][0]
+        d += np.eye(1, w, h_index)
+
+    return d
+
+
 class Covariance:
     """Sigma matrix"""
 
