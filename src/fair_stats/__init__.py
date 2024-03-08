@@ -44,9 +44,25 @@ class Update:
     def __init__(self, bernoullis: list[np.ndarray]):
         self.bernoullis = bernoullis
 
-    def direct(self, H):
+    def direct(self, H: np.ndarray) -> np.ndarray:
+        """Directly compute U from H
+
+        H is an m X 2**m transformation matrix. U is an m X m
+        update matrix.
+
+        Args:
+            H (np.ndarray): Transformation matrix (bit vector to categorical)
+
+        Returns:
+            np.ndarray: Update matrix U
+        """
+        n, _ = self.bernoullis.shape
         w = H.shape[1]
         Delta = np.zeros((w, w))
+        for row in range(n):
+            h_index = transform(self.bernoullis[row][:, None], H)
+            Delta[h_index, h_index] += 1
+
         return H @ Delta @ H.T
 
 
