@@ -3,6 +3,19 @@ import numpy as np
 from fair_stats.survey import Corpus
 
 
+def transform(bernoullis: np.ndarray, H: np.ndarray) -> int:
+    """Find index for bernoulis as column in H
+
+    Args:
+        bernoullis (np.ndarray): Column in H
+        H (np.ndarray): Transformation matrix (bit vector to categortical)
+
+    Returns:
+        int: Index of column in H that matches bernoullis
+    """
+    return np.where((H == bernoullis).all(axis=0))[0][0]
+
+
 def aggregate(bernoullis: list[np.ndarray], H: np.ndarray) -> np.ndarray:
     """d vector
 
@@ -19,10 +32,22 @@ def aggregate(bernoullis: list[np.ndarray], H: np.ndarray) -> np.ndarray:
     w = 2**m
     d = np.zeros((1, w))
     for row in range(n):
-        h_index = np.where((H == bernoullis[row][:, None]).all(axis=0))[0][0]
+        h_index = transform(bernoullis[row][:, None], H)
         d += np.eye(1, w, h_index)
 
     return d
+
+
+class Update:
+    """U matrix"""
+
+    def __init__(self, bernoullis: list[np.ndarray]):
+        self.bernoullis = bernoullis
+
+    def direct(self, H):
+        w = H.shape[1]
+        Delta = np.zeros((w, w))
+        return H @ Delta @ H.T
 
 
 class Covariance:
