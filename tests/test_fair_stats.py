@@ -1,4 +1,4 @@
-from fair_stats import aggregate, binary, integer, transformation
+from fair_stats import aggregate, binary, integer, transformation, Update
 import numpy as np
 
 
@@ -30,6 +30,12 @@ def test_transformation():
     )
 
     np.testing.assert_array_equal(trans, H3)
+
+
+def test_update():
+    U = Update(np.array([[1, 0, 1], [0, 1, 1]]))
+
+    np.testing.assert_array_equal(U.direct(transformation(3)), U.indirect())
 
 
 def test_aggregates_not_enough_for_U():

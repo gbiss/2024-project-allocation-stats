@@ -55,12 +55,11 @@ def transformation(n: int) -> np.ndarray:
     return np.vstack(columns).T
 
 
-def transform(bernoullis: np.ndarray, H: np.ndarray) -> int:
+def transform(bernoullis: np.ndarray) -> int:
     """Find index for bernoulis as column in H
 
     Args:
         bernoullis (np.ndarray): Column in H
-        H (np.ndarray): Transformation matrix (bit vector to categortical)
 
     Returns:
         int: Index of column in H that matches bernoullis
@@ -112,14 +111,19 @@ class Update:
         w = H.shape[1]
         Delta = np.zeros((w, w))
         for row in range(n):
-            h_index = transform(self.bernoullis[row][:, None], H)
+            h_index = transform(self.bernoullis[row][:, None])
             Delta[h_index, h_index] += 1
 
         return H @ Delta @ H.T
 
-    def indirect(self, n: int) -> np.ndarray:
-        for row in self.bernoullis.shape[0]:
-            pass
+    def indirect(self) -> np.ndarray:
+        m = self.bernoullis.shape[1]
+        U = np.zeros((m, m))
+        for row in range(self.bernoullis.shape[0]):
+            bits = self.bernoullis[row, :]
+            U += np.outer(bits, bits)
+
+        return U
 
 
 class Covariance:
