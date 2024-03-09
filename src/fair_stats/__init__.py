@@ -24,6 +24,21 @@ def binary(integer: int, n: int) -> np.ndarray:
     return np.array(list(binary_str), dtype=int)
 
 
+def integer(bits: np.ndarray) -> int:
+    """Convert bit array to integer
+
+    Args:
+        bits (np.ndarray): Bit array
+
+    Returns:
+        int: Integer encoding of bit array
+    """
+    bits_str = "".join(str(bit) for bit in bits.flatten())
+    integer = int(bits_str, 2)
+
+    return integer
+
+
 def transformation(n: int) -> np.ndarray:
     """Transformation matrix H (binary to categorical)
 
@@ -50,7 +65,7 @@ def transform(bernoullis: np.ndarray, H: np.ndarray) -> int:
     Returns:
         int: Index of column in H that matches bernoullis
     """
-    return np.where((H == bernoullis).all(axis=0))[0][0]
+    return integer(bernoullis)
 
 
 def aggregate(bernoullis: list[np.ndarray], H: np.ndarray) -> np.ndarray:
@@ -101,6 +116,10 @@ class Update:
             Delta[h_index, h_index] += 1
 
         return H @ Delta @ H.T
+
+    def indirect(self, n: int) -> np.ndarray:
+        for row in self.bernoullis.shape[0]:
+            pass
 
 
 class Covariance:

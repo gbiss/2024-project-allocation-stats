@@ -1,4 +1,4 @@
-from fair_stats import aggregate, binary, transformation
+from fair_stats import aggregate, binary, integer, transformation
 import numpy as np
 
 
@@ -7,6 +7,20 @@ def test_index_to_vector():
     np.testing.assert_array_equal(binary(3, 3), np.array([0, 1, 1]))
     with np.testing.assert_raises(OverflowError):
         binary(3, 1)
+
+
+def test_convert_int_bits():
+    assert integer(binary(5, 3)) == 5
+    assert integer(binary(13, 4)) == 13
+    assert integer(binary(0, 2)) == 0
+
+
+def test_transform():
+    bits = np.array([1, 0, 1]).reshape((3, 1))
+    H3 = transformation(3)
+    index = np.where((H3 == bits).all(axis=0))[0][0]
+
+    assert index == integer(bits)
 
 
 def test_transformation():
