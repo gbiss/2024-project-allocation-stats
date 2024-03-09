@@ -148,11 +148,3 @@ def student3(
         schedule2,
         seed=2,
     )
-
-
-@pytest.fixture
-def H3():
-    """Transformation matrix (bit vector to categorical)"""
-    return np.array(
-        [[0, 0, 0, 0, 1, 1, 1, 1], [0, 0, 1, 1, 0, 0, 1, 1], [0, 1, 0, 1, 0, 1, 0, 1]]
-    )

@@ -3,6 +3,43 @@ import numpy as np
 from fair_stats.survey import Corpus
 
 
+def binary(integer: int, n: int) -> np.ndarray:
+    """Convert integer to binary
+
+    Args:
+        integer (int): Postive integer for conversion
+        n (int): Number of bits
+
+    Raises:
+        OverflowError: Bits should be sufficient to encode integer
+
+    Returns:
+        np.ndarray: Bits comprising integer
+    """
+    if integer >= 2**n:
+        raise OverflowError("index requires more than n bits")
+
+    binary_str = format(integer, "b").zfill(n)
+
+    return np.array(list(binary_str), dtype=int)
+
+
+def transformation(n: int) -> np.ndarray:
+    """Transformation matrix H (binary to categorical)
+
+    Args:
+        n (int): Number of bits
+
+    Returns:
+        np.ndarray: n X 2**n matrix with columns encoding ints 0 to 2**n-1
+    """
+    columns = []
+    for i in range(2**n):
+        columns.append(binary(i, n))
+
+    return np.vstack(columns).T
+
+
 def transform(bernoullis: np.ndarray, H: np.ndarray) -> int:
     """Find index for bernoulis as column in H
 

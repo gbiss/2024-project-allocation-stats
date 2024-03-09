@@ -1,8 +1,24 @@
-from fair_stats import aggregate
+from fair_stats import aggregate, binary, transformation
 import numpy as np
 
 
-def test_aggregates_not_enough_for_U(H3):
+def test_index_to_vector():
+    np.testing.assert_array_equal(binary(3, 2), np.array([1, 1]))
+    np.testing.assert_array_equal(binary(3, 3), np.array([0, 1, 1]))
+    with np.testing.assert_raises(OverflowError):
+        binary(3, 1)
+
+
+def test_transformation():
+    trans = transformation(3)
+    H3 = np.array(
+        [[0, 0, 0, 0, 1, 1, 1, 1], [0, 0, 1, 1, 0, 0, 1, 1], [0, 1, 0, 1, 0, 1, 0, 1]]
+    )
+
+    np.testing.assert_array_equal(trans, H3)
+
+
+def test_aggregates_not_enough_for_U():
     """Survey aggregates are not enough to form update matrix U
 
     This test provides a counterexample to the idea that, for the purpose of computing
@@ -11,6 +27,8 @@ def test_aggregates_not_enough_for_U(H3):
     two different sets of n flips will, having the same aggregates, will produce two
     different update matrices.
     """
+    H3 = transformation(3)
+
     # example survey outcomes; each outcome has n=2 sets of m=3 coin flips
     bernoullis1 = np.array([[1, 1, 1], [0, 1, 0]])
     bernoullis2 = np.array([[1, 1, 0], [0, 1, 1]])
