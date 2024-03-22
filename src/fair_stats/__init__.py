@@ -90,7 +90,7 @@ def aggregate(bernoullis: list[np.ndarray], H: np.ndarray) -> np.ndarray:
 
 
 class Update:
-    """U matrix"""
+    """Data matrix U"""
 
     def __init__(self, bernoullis: list[np.ndarray]):
         self.bernoullis = bernoullis
@@ -117,6 +117,11 @@ class Update:
         return H @ Delta @ H.T
 
     def indirect(self) -> np.ndarray:
+        """Calculate U without materializing H
+
+        Returns:
+            np.ndarray: Update matrix
+        """
         m = self.bernoullis.shape[1]
         U = np.zeros((m, m))
         for row in range(self.bernoullis.shape[0]):
@@ -126,48 +131,161 @@ class Update:
         return U
 
 
-class Covariance:
-    """Sigma matrix"""
+class Shape:
+    """Shape parameter nu"""
 
-    pass
+    def __init__(self, nu: float) -> None:
+        """Prior for nu
+
+        Args:
+            nu (float): Prior shape parameter
+        """
+        self._data = nu
+
+    def update(self, n: int) -> "Shape":
+        """Posterior for nu
+
+        Args:
+            n (int): Number of Bernoulli sample vectors
+
+        Returns:
+            Shape: Updated shape object
+        """
+        self._data += n
+
+    def __call__(self) -> float:
+        """Value of shape
+
+        Returns:
+            float: Shape parameter
+        """
+        return self._data
 
 
-class Correlation:
-    """R matrix"""
+def standard_deviations(mu: "Mean", nu: Shape) -> np.ndarray:
+    """Diagonal V matrix of standard deviations
 
-    def __init__(self, m: int) -> None:
-        self.m = m
-        self._data = np.eye(self.m)
+    Args:
+        mu (Mean): mX1 mean vector
+        nu (Shape): scalar shape parameter
 
-    def update(self, V: np.ndarray, Sigma: np.ndarray) -> "Correlation":
-        V_inv = np.linalg.inv(V)
-        self._data = V_inv**0.5 @ Sigma @ V_inv**0.5
+    Returns:
+        np.ndarray: mXm matrix with standard deviations along diagonal
+    """
+    return np.diag(np.multiply(mu(), 1 - mu()).flatten()) / (nu() * (nu() + 1))
 
-        return self
 
+class Moment:
+    """Moment matrix A"""
 
-class StandardDeviations:
-    """Diagonal matrix V of standard deviations"""
+    def __init__(self, Sigma: np.ndarray, mu: "Mean", nu: Shape) -> None:
+        """Prior moment matrix A
 
-    pass
+        Args:
+            Sigma (np.ndarray): Covariance matrix
+            mu (Mean): Mean vector
+            nu (Shape): Shape parameter
+        """
+        self._data = nu() * ((nu() + 1) * Sigma() @ np.outer(mu(), mu()))
+
+    def update(self, U: Update) -> "Moment":
+        """Posterior moment matrix
+
+        Args:
+            U (Update): Update (data) matrix
+
+        Returns:
+            Moment: Updated Moment object
+        """
+        self._data += U.indirect()
+
+    def __call__(self) -> np.ndarray:
+        """Value of moment matrix
+
+        Returns:
+            np.ndarray: Moment matrix
+        """
+        return self._data
 
 
 class Mean:
     """Mean vector mu"""
 
     def __init__(self, m: int) -> None:
+        """Prior for mean vector mu
+
+        Args:
+            m (int): Number of dimensions of each Bernoulli sample
+        """
         self.m = m
         self._data = np.ones((self.m, 1)) / 2
 
-    def update(self, A: np.ndarray, nu: float) -> "Mean":
-        self._data = np.diag(A) / nu
+    def update(self, A: Moment, nu: Shape) -> "Mean":
+        """Posterior for mean vector mu
+
+        Args:
+            A (np.ndarray): Moment object
+            nu (float): Shape object
+
+        Returns:
+            Mean: Updated mean vector
+        """
+        self._data = np.diag(A()) / nu()
 
         return self
 
+    def __call__(self) -> np.ndarray:
+        """Value of mean vector
 
-class Data:
-    """Data matrix U"""
+        Returns:
+            np.ndarray: Mean vector
+        """
+        return self._data
 
-    def __init__(self, m: int, corpus: Corpus) -> None:
-        self.m = m
-        self.corpus = corpus
+
+class Covariance:
+
+    def __init__(self, R: np.ndarray, V: np.ndarray) -> None:
+        """Prior covariance matrix Sigma
+
+        Args:
+            R (np.ndarray): mXm correlation matrix
+            V (np.ndarray): mXm standard deviations matrix
+        """
+        self._data = V**0.5 @ R @ V**0.5
+
+    def update(self, A: Moment, mu: Mean, nu: Shape) -> "Covariance":
+        """Posterior covariance Matrix Sigma
+
+        Args:
+            A (Moment): Moment matrix
+            mu (Mean): Mean vector
+            nu (Shape): Shape parameter
+
+        Returns:
+            Covariance: Updated covariance matrix
+        """
+        return (A() / nu() - np.outer(mu(), mu())) / (nu() + 1)
+
+    def __call__(self):
+        """Value of covariance matrix
+
+        Returns:
+            np.ndarray: Covariance matrix
+        """
+        return self._data
+
+
+def correlation(V: np.ndarray, Sigma: Covariance) -> np.ndarray:
+    """R matrix
+
+    Args:
+        V (np.ndarray): mXm standard deviation matrix
+        Sigma (Covariance): Covariance object containing mXm matrix
+
+    Returns:
+        np.ndarray: mXm correlation matrix
+    """
+    V_inv = np.linalg.inv(V)
+
+    return V_inv**0.5 @ Sigma() @ V_inv**0.5

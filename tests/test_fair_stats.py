@@ -1,4 +1,16 @@
-from fair_stats import aggregate, binary, integer, transformation, Update
+from fair_stats import (
+    aggregate,
+    binary,
+    correlation,
+    integer,
+    standard_deviations,
+    transformation,
+    Covariance,
+    Mean,
+    Moment,
+    Shape,
+    Update,
+)
 import numpy as np
 
 
@@ -36,6 +48,28 @@ def test_update():
     U = Update(np.array([[1, 0, 1], [0, 1, 1]]))
 
     np.testing.assert_array_equal(U.direct(transformation(3)), U.indirect())
+
+
+def test_prior_posterior():
+    # data
+    U = Update(np.array([[1, 0, 1], [0, 1, 1]]))
+    n, m = U.bernoullis.shape
+
+    # priors
+    R = np.eye(m)
+    nu = Shape(1)
+    mu = Mean(m)
+    V = standard_deviations(mu, nu)
+    Sigma = Covariance(R, V)
+    A = Moment(Sigma, mu, nu)
+
+    # posteriors
+    nu.update(n)
+    A.update(U)
+    mu.update(A, nu)
+    Sigma.update(A, mu, nu)
+    V = standard_deviations(mu, nu)
+    R = correlation(V, Sigma)
 
 
 def test_aggregates_not_enough_for_U():
