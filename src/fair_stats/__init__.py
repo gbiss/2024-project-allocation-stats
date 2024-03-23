@@ -84,7 +84,7 @@ def aggregate(bernoullis: list[np.ndarray], H: np.ndarray) -> np.ndarray:
     w = 2**m
     d = np.zeros((1, w))
     for row in range(n):
-        h_index = transform(bernoullis[row][:, None], H)
+        h_index = transform(bernoullis[row][:, None])
         d += np.eye(1, w, h_index)
 
     return d
