@@ -90,32 +90,80 @@ def aggregate(bernoullis: list[np.ndarray], H: np.ndarray) -> np.ndarray:
     return d
 
 
-def standard_deviations(mu: "Mean", nu: "Shape") -> np.ndarray:
-    """Diagonal V matrix of standard deviations
+class StandardDeviations:
+    """Diagonal matrix V of standard deviations"""
 
-    Args:
-        mu (Mean): mX1 mean vector
-        nu (Shape): scalar shape parameter
+    def __init__(self, mu: "Mean", nu: "Shape") -> None:
+        """Prior matrix of standard deviations
 
-    Returns:
-        np.ndarray: mXm matrix with standard deviations along diagonal
-    """
-    return np.diag(np.multiply(mu(), 1 - mu()).flatten()) / (nu() * (nu() + 1))
+        Args:
+            mu (Mean): Mean object
+            nu (Shape): Shape object
+        """
+        self.mu = mu
+        self.nu = nu
+        self._data = np.zeros(len(self.mu))
+        self.update(self.mu, self.nu)
+
+    def update(self, mu: "Mean", nu: "Shape") -> "StandardDeviations":
+        """Posterior matrix of standard deviations
+
+        Args:
+            mu (Mean): Mean object
+            nu (Shape): Shape object
+
+        Returns:
+            StandardDeviations: Standard deviations object
+        """
+        self._data = np.diag(np.multiply(mu(), 1 - mu()).flatten()) / (
+            nu() * (nu() + 1)
+        )
+
+        return self
+
+    def __call__(self) -> np.ndarray:
+        """Value of standard deviations
+
+        Returns:
+            np.ndarray: Standard deviations matrix
+        """
+        return self._data
 
 
-def correlation(V: np.ndarray, Sigma: "Covariance") -> np.ndarray:
-    """R matrix
+class Correlation:
+    """Correlation matrix R"""
 
-    Args:
-        V (np.ndarray): mXm standard deviation matrix
-        Sigma (Covariance): Covariance object containing mXm matrix
+    def __init__(self, m: int) -> None:
+        """Prior correlation matrix R
 
-    Returns:
-        np.ndarray: mXm correlation matrix
-    """
-    V_inv = np.linalg.inv(V)
+        Args:
+            m (int): Number of dimensions
+        """
+        self.m = m
+        self._data = np.eye(self.m)
 
-    return V_inv**0.5 @ Sigma() @ V_inv**0.5
+    def update(self, V: StandardDeviations, Sigma: "Covariance") -> np.ndarray:
+        """Posterior matrix R
+
+        Args:
+            V (np.ndarray): Standard deviations object
+            Sigma (Covariance): Covariance object containing mXm matrix
+
+        Returns:
+            Correlation: Correlation object
+        """
+        V_inv = np.linalg.inv(V())
+        self._data = V_inv**0.5 @ Sigma() @ V_inv**0.5
+
+        return self
+
+    def __call__(self) -> np.ndarray:
+        """Value of correlation matrix
+
+        Returns:
+            np.ndarray: Correlation matrix
+        """
+        return self._data
 
 
 class Update:
@@ -258,17 +306,26 @@ class Mean:
         """
         return self._data
 
+    def __len__(self) -> int:
+        """Length of mean vector
+
+        Returns:
+            int: Length
+        """
+        return max(self._data.shape)
+
 
 class Covariance:
+    """Covariance matrix Sigma"""
 
-    def __init__(self, R: np.ndarray, V: np.ndarray) -> None:
+    def __init__(self, R: "Correlation", V: "StandardDeviations") -> None:
         """Prior covariance matrix Sigma
 
         Args:
-            R (np.ndarray): mXm correlation matrix
-            V (np.ndarray): mXm standard deviations matrix
+            R (np.ndarray): Correlation object
+            V (np.ndarray): Standard deviations object
         """
-        self._data = V**0.5 @ R @ V**0.5
+        self._data = V() ** 0.5 @ R() @ V() ** 0.5
 
     def update(self, A: "Moment", mu: "Mean", nu: "Shape") -> "Covariance":
         """Posterior covariance Matrix Sigma
@@ -293,6 +350,7 @@ class Covariance:
 
 
 class Marginal:
+    """Marginal distribution"""
 
     def __init__(self, nu: "Shape") -> None:
         """Prior marginal distribution

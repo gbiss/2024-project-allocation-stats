@@ -2,15 +2,15 @@ import scipy
 from fair_stats import (
     aggregate,
     binary,
-    correlation,
     integer,
-    standard_deviations,
     transformation,
+    Correlation,
     Covariance,
     Marginal,
     Mean,
     Moment,
     Shape,
+    StandardDeviations,
     Update,
 )
 import numpy as np
@@ -58,10 +58,10 @@ def test_prior_posterior(bernoullis: np.ndarray):
     n, m = bernoullis.shape
 
     # priors
-    R = np.eye(m)
+    R = Correlation(m)
     nu = Shape(1)
     mu = Mean(m)
-    V = standard_deviations(mu, nu)
+    V = StandardDeviations(mu, nu)
     Sigma = Covariance(R, V)
     A = Moment(Sigma, mu, nu)
 
@@ -70,8 +70,8 @@ def test_prior_posterior(bernoullis: np.ndarray):
     A.update(U)
     mu.update(A, nu)
     Sigma.update(A, mu, nu)
-    V = standard_deviations(mu, nu)
-    R = correlation(V, Sigma)
+    V.update(mu, nu)
+    R.update(V, Sigma)
 
 
 def test_marginal(bernoullis: np.ndarray):
