@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import stats
 
 from fair_stats.survey import Corpus
 
@@ -289,3 +290,44 @@ class Covariance:
             np.ndarray: Covariance matrix
         """
         return self._data
+
+
+class Marginal:
+
+    def __init__(self, nu: "Shape") -> None:
+        """Prior marginal distribution
+
+        Args:
+            nu (Shape): Shape parameter
+        """
+        self.nu = nu
+        self.n = 0
+        self.positives = 0
+
+        self.update(self.positives, self.n)
+
+    def update(self, positives: int, n: int) -> "Marginal":
+        """Posterior update for marginal distribution
+
+        Args:
+            positives (int): Sum of Bernoulli r.v.s for this marginal
+            n (int): Quantity of Bernoulli r.v.s for this update
+
+        Returns:
+            Marginal: Marginal object
+        """
+        self.n += n
+        self.positives += positives
+        self._dist = stats.beta(
+            self.nu() + self.positives, self.nu() + self.n - self.positives
+        )
+
+        return self
+
+    def __call__(self) -> stats.beta:
+        """Value of marginal distribution
+
+        Returns:
+            stats.beta: Marginal distribution
+        """
+        return self._dist

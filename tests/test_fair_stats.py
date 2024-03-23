@@ -1,3 +1,4 @@
+import scipy
 from fair_stats import (
     aggregate,
     binary,
@@ -6,6 +7,7 @@ from fair_stats import (
     standard_deviations,
     transformation,
     Covariance,
+    Marginal,
     Mean,
     Moment,
     Shape,
@@ -44,16 +46,16 @@ def test_transformation():
     np.testing.assert_array_equal(trans, H3)
 
 
-def test_update():
-    U = Update(np.array([[1, 0, 1], [0, 1, 1]]))
+def test_update(bernoullis: np.ndarray):
+    U = Update(bernoullis)
 
     np.testing.assert_array_equal(U.direct(transformation(3)), U.indirect())
 
 
-def test_prior_posterior():
+def test_prior_posterior(bernoullis: np.ndarray):
     # data
-    U = Update(np.array([[1, 0, 1], [0, 1, 1]]))
-    n, m = U.bernoullis.shape
+    U = Update(bernoullis)
+    n, m = bernoullis.shape
 
     # priors
     R = np.eye(m)
@@ -70,6 +72,18 @@ def test_prior_posterior():
     Sigma.update(A, mu, nu)
     V = standard_deviations(mu, nu)
     R = correlation(V, Sigma)
+
+
+def test_marginal(bernoullis: np.ndarray):
+    n, _ = bernoullis.shape
+    # which dimension to use for marginal
+    j = 1
+    marginal = Marginal(Shape(1))
+    marginal.update(bernoullis.sum(axis=0)[j], n)
+
+    assert isinstance(
+        marginal(), scipy.stats._distn_infrastructure.rv_continuous_frozen
+    )
 
 
 def test_aggregates_not_enough_for_U():

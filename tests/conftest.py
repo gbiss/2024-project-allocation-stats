@@ -148,3 +148,8 @@ def student3(
         schedule2,
         seed=2,
     )
+
+
+@pytest.fixture
+def bernoullis():
+    return np.array([[1, 0, 1], [0, 1, 1]])
