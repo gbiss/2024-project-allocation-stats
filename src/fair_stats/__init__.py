@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import stats
+from statsmodels.distributions.copula.api import CopulaDistribution, GaussianCopula
 
 from fair_stats.survey import Corpus
 
@@ -387,5 +388,62 @@ class Marginal:
 
         Returns:
             stats.beta: Marginal distribution
+        """
+        return self._dist
+
+
+class mBeta:
+    """mBeta distribution"""
+
+    def __init__(self, R: Correlation, mu: Mean, nu: Shape) -> None:
+        """Prior mBeta distribution
+
+        Args:
+            R (Correlation): Correlation object
+            mu (Mean): Mean object
+            nu (Shape): Shape object
+        """
+        self.R = R
+        self.mu = mu
+        self.nu = nu
+        self.m = len(self.mu)
+        self.V = StandardDeviations(self.mu, self.nu)
+        self.Sigma = Covariance(self.R, self.V)
+        self.A = Moment(self.Sigma, self.mu, self.nu)
+        self.marginals = [Marginal(Shape(1)) for j in range(self.m)]
+
+        self.update()
+
+    def update(self, bernoullis: np.ndarray = None) -> "mBeta":
+        """Posterior mBeta distribution
+
+        Args:
+            bernoullis (np.ndarray, optional): Observation data. Defaults to None.
+
+        Returns:
+            mBeta: mBeta object
+        """
+        if bernoullis is not None:
+            n, _ = bernoullis.shape
+            for j in range(self.m):
+                self.marginals[j].update(bernoullis.sum(axis=0)[j], n)
+
+            U = Update(bernoullis)
+            self.nu.update(n)
+            self.A.update(U)
+            self.mu.update(self.A, self.nu)
+            self.Sigma.update(self.A, self.mu, self.nu)
+            self.V.update(self.mu, self.nu)
+            self.R.update(self.V, self.Sigma)
+
+        self._dist = CopulaDistribution(
+            copula=GaussianCopula(), marginals=self.marginals
+        )
+
+    def __call__(self) -> CopulaDistribution:
+        """Value of mBeta
+
+        Returns:
+            CopulaDistribution: mBeta distribution
         """
         return self._dist

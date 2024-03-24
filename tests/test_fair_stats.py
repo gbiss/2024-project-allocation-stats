@@ -1,4 +1,5 @@
 import scipy
+import statsmodels
 from fair_stats import (
     aggregate,
     binary,
@@ -7,6 +8,7 @@ from fair_stats import (
     Correlation,
     Covariance,
     Marginal,
+    mBeta,
     Mean,
     Moment,
     Shape,
@@ -84,6 +86,17 @@ def test_marginal(bernoullis: np.ndarray):
     assert isinstance(
         marginal(), scipy.stats._distn_infrastructure.rv_continuous_frozen
     )
+
+
+def test_mbeta(bernoullis: np.ndarray):
+    _, m = bernoullis.shape
+    R = Correlation(m)
+    nu = Shape(1)
+    mu = Mean(m)
+    mbeta = mBeta(R, mu, nu)
+    mbeta.update(bernoullis)
+
+    assert isinstance(mbeta(), statsmodels.distributions.copula.api.CopulaDistribution)
 
 
 def test_aggregates_not_enough_for_U():
