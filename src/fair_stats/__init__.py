@@ -410,7 +410,7 @@ class mBetaExact:
         self._dist = stats.dirichlet(self.gamma)
 
     def sample(self):
-        return self.H @ self._dist.T.rvs()
+        return self.H @ self._dist.rvs().T
 
 
 class mBetaApprox:
