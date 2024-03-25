@@ -93,9 +93,8 @@ def test_exact_mbeta():
     m = 3
     eps = 0.01
     gamma = np.ones((2**m,)) / eps
-    gamma[1] = 1
+    gamma[1] = 10
     gamma[5] = 1
-    gamma = gamma / sum(gamma)
     mbeta = mBetaExact(gamma)
 
     assert mbeta.sample(2).shape == (2, m)

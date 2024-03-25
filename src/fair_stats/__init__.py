@@ -399,7 +399,7 @@ class mBetaExact:
         """Exact mBeta from gamma parameters
 
         Args:
-            gamma (np.ndarray): Gamma must contain non-zeros and add to one
+            gamma (np.ndarray): Gamma must contain non-zeros
         """
         self.gamma = gamma
         self.m = int(np.log2(len(self.gamma)))
