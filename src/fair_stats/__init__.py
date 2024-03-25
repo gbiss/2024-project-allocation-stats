@@ -461,8 +461,24 @@ class mBetaApprox:
             self.R.update(self.V, self.Sigma)
 
         self._dist = CopulaDistribution(
-            copula=GaussianCopula(), marginals=self.marginals
+            copula=GaussianCopula(self.R(), k_dim=self.m),
+            marginals=[marginal() for marginal in self.marginals],
         )
+
+    def sample(self, n: int = 1) -> np.ndarray:
+        """Sample from approximate mBeta distribution
+
+        Args:
+            n (int, optional): Number of samples. Defaults to 1.
+
+        Returns:
+            np.ndarray: nXm matrix of samples
+        """
+        if n == 1:
+            # there is a bug where 1 sample throws a dimension mismatch error
+            return self._dist.rvs(2)[0, :]
+        else:
+            return self._dist.rvs(n)
 
     def __call__(self) -> CopulaDistribution:
         """Value of approximate mBeta

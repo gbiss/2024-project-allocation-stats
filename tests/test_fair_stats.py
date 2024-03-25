@@ -111,6 +111,8 @@ def test_mbeta(bernoullis: np.ndarray):
     mbeta.update(bernoullis)
 
     assert isinstance(mbeta(), statsmodels.distributions.copula.api.CopulaDistribution)
+    assert len(mbeta.sample()) == m
+    assert mbeta.sample(2).shape == (2, m)
 
 
 def test_aggregates_not_enough_for_U():
