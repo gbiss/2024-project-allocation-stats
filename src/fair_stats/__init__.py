@@ -396,21 +396,26 @@ class mBetaExact:
     """Exact mBeta distribution"""
 
     def __init__(self, gamma: np.ndarray) -> None:
-        """_summary_
+        """Exact mBeta from gamma parameters
 
         Args:
-            gamma (np.ndarray): _description_
-
-        Returns:
-            _type_: _description_
+            gamma (np.ndarray): Gamma must contain non-zeros and add to one
         """
         self.gamma = gamma
         self.m = int(np.log2(len(self.gamma)))
         self.H = transformation(self.m)
         self._dist = stats.dirichlet(self.gamma)
 
-    def sample(self):
-        return self.H @ self._dist.rvs().T
+    def sample(self, n: int = 1) -> np.ndarray:
+        """Sample from exact mBeta distribution
+
+        Args:
+            n (int): Number of samples to draw. Defaults to 1.
+
+        Returns:
+            np.ndarray: nXlen(gamma) matrix of samples
+        """
+        return (self.H @ self._dist.rvs(n).T).T
 
 
 class mBetaApprox:

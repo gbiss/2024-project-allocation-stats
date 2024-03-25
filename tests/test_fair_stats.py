@@ -97,9 +97,8 @@ def test_exact_mbeta():
     gamma[5] = 1
     gamma = gamma / sum(gamma)
     mbeta = mBetaExact(gamma)
-    sample = mbeta.sample()
 
-    assert len(sample) == m
+    assert mbeta.sample(2).shape == (2, m)
 
 
 def test_mbeta(bernoullis: np.ndarray):
