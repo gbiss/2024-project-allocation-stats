@@ -392,11 +392,14 @@ class Marginal:
         return self._dist
 
 
-class mBeta:
-    """mBeta distribution"""
+class mBetaApprox:
+    """Approximate mBeta distribution
+
+    Approximation based on Gaussian copula
+    """
 
     def __init__(self, R: Correlation, mu: Mean, nu: Shape) -> None:
-        """Prior mBeta distribution
+        """Prior approximate mBeta distribution
 
         Args:
             R (Correlation): Correlation object
@@ -414,14 +417,14 @@ class mBeta:
 
         self.update()
 
-    def update(self, bernoullis: np.ndarray = None) -> "mBeta":
-        """Posterior mBeta distribution
+    def update(self, bernoullis: np.ndarray = None) -> "mBetaApprox":
+        """Posterior approximate mBeta distribution
 
         Args:
             bernoullis (np.ndarray, optional): Observation data. Defaults to None.
 
         Returns:
-            mBeta: mBeta object
+            mBeta: mBetaApprox object
         """
         if bernoullis is not None:
             n, _ = bernoullis.shape
@@ -441,9 +444,9 @@ class mBeta:
         )
 
     def __call__(self) -> CopulaDistribution:
-        """Value of mBeta
+        """Value of approximate mBeta
 
         Returns:
-            CopulaDistribution: mBeta distribution
+            CopulaDistribution: Approximate mBeta distribution
         """
         return self._dist

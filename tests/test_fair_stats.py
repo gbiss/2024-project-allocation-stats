@@ -8,7 +8,7 @@ from fair_stats import (
     Correlation,
     Covariance,
     Marginal,
-    mBeta,
+    mBetaApprox,
     Mean,
     Moment,
     Shape,
@@ -93,7 +93,7 @@ def test_mbeta(bernoullis: np.ndarray):
     R = Correlation(m)
     nu = Shape(1)
     mu = Mean(m)
-    mbeta = mBeta(R, mu, nu)
+    mbeta = mBetaApprox(R, mu, nu)
     mbeta.update(bernoullis)
 
     assert isinstance(mbeta(), statsmodels.distributions.copula.api.CopulaDistribution)
