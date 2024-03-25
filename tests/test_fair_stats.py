@@ -9,6 +9,7 @@ from fair_stats import (
     Covariance,
     Marginal,
     mBetaApprox,
+    mBetaExact,
     Mean,
     Moment,
     Shape,
@@ -86,6 +87,19 @@ def test_marginal(bernoullis: np.ndarray):
     assert isinstance(
         marginal(), scipy.stats._distn_infrastructure.rv_continuous_frozen
     )
+
+
+def test_exact_mbeta():
+    m = 3
+    eps = 0.01
+    gamma = np.ones((2**m,)) / eps
+    gamma[1] = 1
+    gamma[5] = 1
+    gamma = gamma / sum(gamma)
+    mbeta = mBetaExact(gamma)
+    sample = mbeta.sample()
+
+    assert len(sample) == m
 
 
 def test_mbeta(bernoullis: np.ndarray):

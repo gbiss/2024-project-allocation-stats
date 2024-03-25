@@ -392,6 +392,27 @@ class Marginal:
         return self._dist
 
 
+class mBetaExact:
+    """Exact mBeta distribution"""
+
+    def __init__(self, gamma: np.ndarray) -> None:
+        """_summary_
+
+        Args:
+            gamma (np.ndarray): _description_
+
+        Returns:
+            _type_: _description_
+        """
+        self.gamma = gamma
+        self.m = int(np.log2(len(self.gamma)))
+        self.H = transformation(self.m)
+        self._dist = stats.dirichlet(self.gamma)
+
+    def sample(self):
+        return self.H @ self._dist.T.rvs()
+
+
 class mBetaApprox:
     """Approximate mBeta distribution
 
