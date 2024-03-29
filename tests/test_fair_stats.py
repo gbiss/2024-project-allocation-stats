@@ -78,11 +78,11 @@ def test_prior_posterior(bernoullis: np.ndarray):
 
 
 def test_marginal(bernoullis: np.ndarray):
-    n, _ = bernoullis.shape
+    n, m = bernoullis.shape
     # which dimension to use for marginal
     j = 1
-    marginal = Marginal(Shape(1))
-    marginal.update(bernoullis.sum(axis=0)[j], n)
+    marginal = Marginal(Shape(1), Mean(m), 0)
+    marginal.update(Shape(2), Mean(m))
 
     assert isinstance(
         marginal(), scipy.stats._distn_infrastructure.rv_continuous_frozen

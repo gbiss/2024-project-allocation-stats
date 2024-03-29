@@ -357,33 +357,30 @@ class Covariance:
 class Marginal:
     """Marginal distribution"""
 
-    def __init__(self, nu: "Shape") -> None:
+    def __init__(self, mu: "Mean", nu: "Shape", index: int) -> None:
         """Prior marginal distribution
 
         Args:
+            mu (Mean): Mean object
             nu (Shape): Shape parameter
+            index (int): Which marginal
         """
-        self.nu = nu
-        self.n = 0
-        self.positives = 0
+        self.index = index
+        self.update(mu, nu)
 
-        self.update(self.positives, self.n)
-
-    def update(self, positives: int, n: int) -> "Marginal":
+    def update(self, mu: "Mean", nu: "Shape") -> "Marginal":
         """Posterior update for marginal distribution
 
         Args:
-            positives (int): Sum of Bernoulli r.v.s for this marginal
-            n (int): Quantity of Bernoulli r.v.s for this update
+            mu (Mean): Mean object
+            nu (Shape): Shape object
 
         Returns:
             Marginal: Marginal object
         """
-        self.n += n
-        self.positives += positives
-        self._dist = stats.beta(
-            self.nu() + self.positives, self.nu() + self.n - self.positives
-        )
+        alpha = nu() * mu()
+        beta = nu() * np.ones(alpha.shape) - alpha
+        self._dist = stats.beta(alpha[self.index], beta[self.index])
 
         return self
 
@@ -443,7 +440,7 @@ class mBetaApprox:
         self.V = StandardDeviations(self.mu, self.nu)
         self.Sigma = Covariance(self.R, self.V)
         self.A = Moment(self.Sigma, self.mu, self.nu)
-        self.marginals = [Marginal(Shape(1)) for j in range(self.m)]
+        self.marginals = [Marginal(self.mu, self.nu, j) for j in range(self.m)]
 
         self.update()
 
@@ -458,9 +455,6 @@ class mBetaApprox:
         """
         if bernoullis is not None:
             n, _ = bernoullis.shape
-            for j in range(self.m):
-                self.marginals[j].update(bernoullis.sum(axis=0)[j], n)
-
             U = Update(bernoullis)
             self.nu.update(n)
             self.A.update(U)
@@ -469,8 +463,11 @@ class mBetaApprox:
             self.V.update(self.mu, self.nu)
             self.R.update(self.V, self.Sigma)
 
+            for j in range(self.m):
+                self.marginals[j].update(self.mu, self.nu)
+
         self._dist = CopulaDistribution(
-            copula=GaussianCopula(self.R(), k_dim=self.m, allow_singular=True),
+            copula=GaussianCopula(self.R(), k_dim=self.m, allow_singular=False),
             marginals=[marginal() for marginal in self.marginals],
         )
 
