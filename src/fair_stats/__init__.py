@@ -116,9 +116,7 @@ class StandardDeviations:
         Returns:
             StandardDeviations: Standard deviations object
         """
-        self._data = np.diag(np.multiply(mu(), 1 - mu()).flatten()) / (
-            nu() * (nu() + 1)
-        )
+        self._data = np.diag(np.multiply(mu(), 1 - mu()).flatten()) / (nu() + 1)
 
         return self
 
@@ -231,6 +229,8 @@ class Shape:
         """
         self._data += n
 
+        return self
+
     def __call__(self) -> float:
         """Value of shape
 
@@ -243,15 +243,15 @@ class Shape:
 class Moment:
     """Moment matrix A"""
 
-    def __init__(self, Sigma: np.ndarray, mu: "Mean", nu: "Shape") -> None:
+    def __init__(self, Sigma: "Covariance", mu: "Mean", nu: "Shape") -> None:
         """Prior moment matrix A
 
         Args:
-            Sigma (np.ndarray): Covariance matrix
+            Sigma (Covariance): Covariance matrix
             mu (Mean): Mean vector
             nu (Shape): Shape parameter
         """
-        self._data = nu() * ((nu() + 1) * Sigma() @ np.outer(mu(), mu()))
+        self._data = nu() * ((nu() + 1) * Sigma() + np.outer(mu(), mu()))
 
     def update(self, U: "Update") -> "Moment":
         """Posterior moment matrix
@@ -263,6 +263,8 @@ class Moment:
             Moment: Updated Moment object
         """
         self._data += U.indirect()
+
+        return self
 
     def __call__(self) -> np.ndarray:
         """Value of moment matrix
@@ -339,7 +341,9 @@ class Covariance:
         Returns:
             Covariance: Updated covariance matrix
         """
-        return (A() / nu() - np.outer(mu(), mu())) / (nu() + 1)
+        self._data = (A() / nu() - np.outer(mu(), mu())) / (nu() + 1)
+
+        return self
 
     def __call__(self):
         """Value of covariance matrix
@@ -466,7 +470,7 @@ class mBetaApprox:
             self.R.update(self.V, self.Sigma)
 
         self._dist = CopulaDistribution(
-            copula=GaussianCopula(self.R(), k_dim=self.m),
+            copula=GaussianCopula(self.R(), k_dim=self.m, allow_singular=True),
             marginals=[marginal() for marginal in self.marginals],
         )
 
