@@ -42,4 +42,5 @@ dependencies = [
                 "fair@git+https://github.com/gbiss/2023-project-fair",
                 "numpy>=1.26.4",
                 "statsmodels>=0.14.1",
+                "scikit-learn>=1.4.1.post1",
                ]

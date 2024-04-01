@@ -1,6 +1,7 @@
 from matplotlib import pyplot as plt
 import numpy as np
 from scipy import stats
+from sklearn.decomposition import PCA
 from fair_stats import (
     Correlation,
     mBetaApprox,
@@ -28,39 +29,47 @@ def infer(thetas, m, n=1):
     return mbeta
 
 
+def plot(data1, data2, proj=False):
+    if proj:
+        pca = PCA(n_components=2)
+        data = pca.fit_transform(np.vstack([data1, data2]))
+        data1 = data[: data1.shape[0], :]
+        data2 = data[data1.shape[0] :, :]
+
+    plt.xlim((-1 * proj, 1))
+    plt.ylim((-1 * proj, 1))
+    plt.scatter(data1[:, 0], data1[:, 1], c="r", alpha=0.25)
+    plt.scatter(data2[:, 0], data2[:, 1], c="b", alpha=0.25)
+
+
 m = 2
 n = 100
+PROJ = True
 
 # generate data from exact mBeta
 plt.figure()
-plt.xlim((0, 1))
-plt.ylim((0, 1))
 eps = 1
 gamma = eps * np.ones((2**m,))
 gamma[1] = 100
 gamma[2] = 100
 mbeta_e = mBetaExact(gamma)
 theta_es = mbeta_e.sample(n)
-plt.scatter(theta_es[:, 0], theta_es[:, 1], c="r", alpha=0.25)
 
 mbeta_a = infer(theta_es, m)
 theta_as = mbeta_a.sample(n)
-plt.scatter(theta_as[:, 0], theta_as[:, 1], c="b", alpha=0.25)
+plot(theta_es, theta_as, PROJ)
 plt.legend(["Exact mBeta", "Approx mBeta"], loc="best")
 
 # generate extremal synthetic data
 plt.figure()
-plt.xlim((0, 1))
-plt.ylim((0, 1))
 thetas = []
 for i in range(n):
-    thetas.append(np.array([[0.99, 0.99], [0.01, 0.01]]))
+    thetas.append(np.array([[0.99] * m, [0.01] * m]))
 theta_es = np.vstack(thetas)
-plt.scatter(theta_es[:, 0], theta_es[:, 1], c="r", alpha=0.25)
 
 mbeta_a = infer(theta_es, m)
 theta_as = mbeta_a.sample(n)
-plt.scatter(theta_as[:, 0], theta_as[:, 1], c="b", alpha=0.25)
+plot(theta_es, theta_as, PROJ)
 plt.legend(["Synthetic samples", "Approx mBeta"], loc="best")
 
 plt.show()
