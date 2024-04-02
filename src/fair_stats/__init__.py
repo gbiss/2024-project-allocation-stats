@@ -2,8 +2,6 @@ import numpy as np
 from scipy import stats
 from statsmodels.distributions.copula.api import CopulaDistribution, GaussianCopula
 
-from fair_stats.survey import Corpus
-
 
 def binary(integer: int, n: int) -> np.ndarray:
     """Convert integer to binary

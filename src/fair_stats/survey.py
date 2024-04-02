@@ -2,6 +2,8 @@ from fair.item import ScheduleItem
 from fair.simulation import RenaissanceMan
 import numpy as np
 
+from . import Correlation, Mean, Shape, mBetaApprox
+
 
 class BaseSurvey:
     """Abstract survey class"""
@@ -44,14 +46,30 @@ class SingleTopicSurvey(BaseSurvey):
         self.schedule = schedule
         self.response_map = {schedule[i]: responses[i] for i in range(len(schedule))}
         self.limit = limit
+        self.m = len(self.schedule)
 
     def data(self) -> np.ndarray:
         """Create data vector from responses
 
+        Raises:
+            ValueError: It must be possible for the normalized sum to equal limit
+
         Returns:
-            np.ndarray: Vector of responses
+            np.ndarray: Vector of normalized responses
         """
-        return np.array([self.response_map[item] for item in self.schedule])
+        data = np.array([self.response_map[item] for item in self.schedule])
+        sm = data.sum()
+
+        if self.limit > 0 and sm == 0:
+            raise ValueError(
+                "There must exist some positive response when limit exceeds zero"
+            )
+
+        # normalize data so that sample sum equals limit
+        if sm > 0:
+            data = self.limit * data / sm
+
+        return data.reshape((1, self.m))
 
 
 class Corpus:
@@ -82,3 +100,25 @@ class Corpus:
                     return False
 
         return True
+
+    def distribution(self) -> mBetaApprox:
+        """Create an mBeta distribution from the survey data
+
+        Raises:
+            ValueError: Corpus must pass validation
+
+        Returns:
+            mBetaApprox: Approximate mBeta distribution
+        """
+        if not self._valid():
+            raise ValueError("Invalid Corpus for generating distribution")
+
+        m = self.surveys[0].m
+        R = Correlation(m)
+        nu = Shape(1)
+        mu = Mean(m)
+        mbeta = mBetaApprox(R, mu, nu)
+        for survey in self.surveys:
+            mbeta.update(survey.data())
+
+        return mbeta
