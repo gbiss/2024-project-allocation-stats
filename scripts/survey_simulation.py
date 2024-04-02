@@ -1,5 +1,7 @@
 import os
 from collections import defaultdict
+from matplotlib import pyplot as plt
+import numpy as np
 
 import pandas as pd
 
@@ -8,10 +10,11 @@ from fair.constraint import CourseTimeConstraint, MutualExclusivityConstraint
 from fair.feature import Course, Section, Slot, Weekday, slots_for_time_range
 from fair.item import ScheduleItem
 from fair.simulation import RenaissanceMan
+from sklearn.decomposition import PCA
 
 from fair_stats.survey import Corpus, SingleTopicSurvey
 
-NUM_STUDENTS = 3
+NUM_STUDENTS = 50
 MAX_COURSES_PER_TOPIC = 5
 LOWER_MAX_COURSES_TOTAL = 1
 UPPER_MAX_COURSES_TOTAL = 5
@@ -80,3 +83,16 @@ surveys = [
 ]
 corpus = Corpus(surveys)
 mbeta = corpus.distribution()
+
+pca = PCA(n_components=2)
+data = np.vstack([survey.data() for survey in surveys])
+data = np.vstack([data, mbeta.sample(NUM_STUDENTS)])
+data = pca.fit_transform(np.vstack(data))
+data1 = data[:NUM_STUDENTS, :]
+data2 = data[NUM_STUDENTS:, :]
+
+plt.scatter(data2[:, 0], data2[:, 1], c="b", alpha=0.25)
+plt.scatter(data1[:, 0], data1[:, 1], c="r", alpha=0.25)
+plt.legend(["Student", "Simulated"])
+plt.title("Survey Responses")
+plt.show()
