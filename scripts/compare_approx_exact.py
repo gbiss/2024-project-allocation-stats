@@ -4,17 +4,12 @@ from scipy import stats
 from sklearn.decomposition import PCA
 from fair_stats import (
     Correlation,
+    bernoulli_samples,
     mBetaApprox,
     mBetaExact,
     Mean,
     Shape,
 )
-
-
-def bernoulli_samples(theta, n, m):
-    return np.hstack(
-        [stats.bernoulli(theta[i]).rvs(n).reshape((n, 1)) for i in range(m)]
-    )
 
 
 def infer(thetas, m, n=1):
@@ -23,7 +18,7 @@ def infer(thetas, m, n=1):
     mu = Mean(m)
     mbeta = mBetaApprox(R, mu, nu)
     for i in range(thetas.shape[0]):
-        bernoullis = bernoulli_samples(thetas[i, :], n, m)
+        bernoullis = bernoulli_samples(thetas[i, :], n)
         mbeta.update(bernoullis)
 
     return mbeta

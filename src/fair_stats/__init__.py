@@ -3,6 +3,24 @@ from scipy import stats
 from statsmodels.distributions.copula.api import CopulaDistribution, GaussianCopula
 
 
+def bernoulli_samples(theta: np.ndarray, n: int = 1):
+    """Generate Bernoulli samples from parameter vector theta
+
+    Args:
+        theta (np.ndarray): Bernoulli parameters
+        n (int, optional): Number of samples. Defaults to 1.
+
+    Returns:
+        np.ndarray: nXm matrix of samples, one per row
+    """
+    theta = theta.flatten()
+    m = len(theta)
+
+    return np.hstack(
+        [stats.bernoulli(theta[i]).rvs(n).reshape((n, 1)) for i in range(m)]
+    )
+
+
 def binary(integer: int, n: int) -> np.ndarray:
     """Convert integer to binary
 

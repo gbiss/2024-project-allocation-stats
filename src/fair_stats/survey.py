@@ -2,7 +2,7 @@ from fair.item import ScheduleItem
 from fair.simulation import RenaissanceMan
 import numpy as np
 
-from . import Correlation, Mean, Shape, mBetaApprox
+from . import Correlation, Mean, Shape, bernoulli_samples, mBetaApprox
 
 
 class BaseSurvey:
@@ -119,6 +119,7 @@ class Corpus:
         mu = Mean(m)
         mbeta = mBetaApprox(R, mu, nu)
         for survey in self.surveys:
-            mbeta.update(survey.data())
+            sample = bernoulli_samples(survey.data())
+            mbeta.update(sample)
 
         return mbeta
