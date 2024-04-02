@@ -14,7 +14,7 @@ from sklearn.decomposition import PCA
 
 from fair_stats.survey import Corpus, SingleTopicSurvey
 
-NUM_STUDENTS = 5
+NUM_STUDENTS = 500
 MAX_COURSES_PER_TOPIC = 5
 LOWER_MAX_COURSES_TOTAL = 1
 UPPER_MAX_COURSES_TOTAL = 5
@@ -95,4 +95,5 @@ plt.scatter(data2[:, 0], data2[:, 1], c="b", alpha=0.25)
 plt.scatter(data1[:, 0], data1[:, 1], c="r", alpha=0.25)
 plt.legend(["Simulated", "Student"])
 plt.title(f"Survey Respondents ({NUM_STUDENTS})")
+plt.tick_params(labelbottom=False, labelleft=False)
 plt.show()
