@@ -15,7 +15,7 @@ def test_single_topic_survey(
 
     assert survey.limit == student.total_courses
     assert [survey.response_map[item] for item in schedule] == preference_mask
-    assert np.array_equal(survey.data(), np.array(preference_mask))
+    assert np.array_equal(survey.data().flatten(), np.array(preference_mask))
 
 
 def test_corpus_validation(
