@@ -2,7 +2,15 @@ from fair.item import ScheduleItem
 from fair.simulation import RenaissanceMan
 import numpy as np
 
-from . import Correlation, Mean, Shape, bernoulli_samples, mBetaApprox
+from . import (
+    Correlation,
+    Mean,
+    Shape,
+    bernoulli_samples,
+    mBeta,
+    mBetaApprox,
+    mBetaMixture,
+)
 
 
 class BaseSurvey:
@@ -115,7 +123,7 @@ class Corpus:
 
         m = self.surveys[0].m
         R = Correlation(m)
-        nu = Shape(1)
+        nu = Shape(0.001)
         mu = Mean(m)
         mbeta = mBetaApprox(R, mu, nu)
         for survey in self.surveys:
@@ -123,3 +131,31 @@ class Corpus:
             mbeta.update(sample)
 
         return mbeta
+
+    def kde_distribution(self, n: int = 1) -> mBetaMixture:
+        """Create a mixture of mBeta distributions, one for each survey
+
+        Args:
+            n (int, optional): Number of samples per mBeta. Defaults to 1.
+
+        Raises:
+            ValueError: Corpus must pass validation
+
+        Returns:
+            mBetaMixture: Approximate mBeta mixture distribution
+        """
+        if not self._valid():
+            raise ValueError("Invalid Corpus for generating distribution")
+
+        mbetas = []
+        for survey in self.surveys:
+            m = self.surveys[0].m
+            R = Correlation(m)
+            nu = Shape(0.001)
+            mu = Mean(m)
+            mbeta = mBetaApprox(R, mu, nu)
+            sample = bernoulli_samples(survey.data(), n)
+            mbeta.update(sample)
+            mbetas.append(mbeta)
+
+        return mBetaMixture(mbetas)

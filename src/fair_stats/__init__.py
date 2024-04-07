@@ -1,3 +1,4 @@
+import random
 import numpy as np
 from scipy import stats
 from statsmodels.distributions.copula.api import CopulaDistribution, GaussianCopula
@@ -409,7 +410,13 @@ class Marginal:
         return self._dist
 
 
-class mBetaExact:
+class mBeta:
+
+    def sample(self, n: int) -> None:
+        raise NotImplementedError
+
+
+class mBetaExact(mBeta):
     """Exact mBeta distribution"""
 
     def __init__(self, gamma: np.ndarray) -> None:
@@ -435,7 +442,7 @@ class mBetaExact:
         return (self.H @ self._dist.rvs(n).T).T
 
 
-class mBetaApprox:
+class mBetaApprox(mBeta):
     """Approximate mBeta distribution
 
     Approximation based on Gaussian copula
@@ -509,3 +516,31 @@ class mBetaApprox:
             CopulaDistribution: Approximate mBeta distribution
         """
         return self._dist
+
+
+class mBetaMixture:
+    """A mixture of mBeta distributions"""
+
+    def __init__(self, mBetas: list[mBeta]) -> None:
+        """A collection of mBetas
+
+        Args:
+            mBetas (list[mBeta]): Component mBeta objects
+        """
+        self.mBetas = mBetas
+
+    def sample(self, n: int) -> np.ndarray:
+        """Choose an mBeta uniformly at random, then sample from it
+
+        Args:
+            n (int): Number of samples to draw
+
+        Returns:
+            np.ndarray: Samples from mBetaMixture
+        """
+        samples = []
+        for i in range(n):
+            mBeta = random.choice(self.mBetas)
+            samples.append(mBeta.sample())
+
+        return np.array(samples)
