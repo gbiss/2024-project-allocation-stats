@@ -518,7 +518,7 @@ class mBetaApprox(mBeta):
         return self._dist
 
 
-class mBetaMixture:
+class mBetaMixture(mBeta):
     """A mixture of mBeta distributions"""
 
     def __init__(self, mBetas: list[mBeta]) -> None:
@@ -529,11 +529,11 @@ class mBetaMixture:
         """
         self.mBetas = mBetas
 
-    def sample(self, n: int) -> np.ndarray:
+    def sample(self, n: int = 1) -> np.ndarray:
         """Choose an mBeta uniformly at random, then sample from it
 
         Args:
-            n (int): Number of samples to draw
+            n (int, optional): Number of samples to draw. Defaults to 1.
 
         Returns:
             np.ndarray: Samples from mBetaMixture
@@ -543,4 +543,4 @@ class mBetaMixture:
             mBeta = random.choice(self.mBetas)
             samples.append(mBeta.sample())
 
-        return np.array(samples)
+        return np.vstack(samples)

@@ -132,11 +132,17 @@ class Corpus:
 
         return mbeta
 
-    def kde_distribution(self, n: int = 1) -> mBetaMixture:
+    def kde_distribution(self, n: int = 1, k: int = 1) -> mBetaMixture:
         """Create a mixture of mBeta distributions, one for each survey
 
+        Corresponding to each survey, k sub-kernels are generated, each drawing
+        n Bernoulli samples according to survey data. This defines an mBetaMixture
+        object per survey. Those mBetaMixture objecs are combined as the kernels in
+        a second-level mBetaMixture object.
+
         Args:
-            n (int, optional): Number of samples per mBeta. Defaults to 1.
+            n (int, optional): Number of samples per sub-kernel. Defaults to 1.
+            k (int, optional): Sub-kernals per survey. Defaults to 1.
 
         Raises:
             ValueError: Corpus must pass validation
@@ -147,15 +153,18 @@ class Corpus:
         if not self._valid():
             raise ValueError("Invalid Corpus for generating distribution")
 
-        mbetas = []
+        mbeta_kdes = []
         for survey in self.surveys:
-            m = self.surveys[0].m
-            R = Correlation(m)
-            nu = Shape(0.001)
-            mu = Mean(m)
-            mbeta = mBetaApprox(R, mu, nu)
-            sample = bernoulli_samples(survey.data(), n)
-            mbeta.update(sample)
-            mbetas.append(mbeta)
+            mbetas = []
+            for i in range(k):
+                m = self.surveys[0].m
+                R = Correlation(m)
+                nu = Shape(0.001)
+                mu = Mean(m)
+                mbeta = mBetaApprox(R, mu, nu)
+                sample = bernoulli_samples(survey.data(), n)
+                mbeta.update(sample)
+                mbetas.append(mbeta)
+            mbeta_kdes.append(mBetaMixture(mbetas))
 
-        return mBetaMixture(mbetas)
+        return mBetaMixture(mbeta_kdes)
