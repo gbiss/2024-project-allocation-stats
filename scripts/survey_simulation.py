@@ -16,7 +16,7 @@ from fair_stats.survey import Corpus, SingleTopicSurvey
 
 NUM_RAND_SAMP = 100
 NUM_SUB_KERNELS = 10
-SAMPLE_PER_STUDENT = 1
+SAMPLE_PER_STUDENT = 100
 
 NUM_STUDENTS = 5
 MAX_COURSES_PER_TOPIC = 5
@@ -96,7 +96,7 @@ data1 = data[:NUM_STUDENTS, :]
 data2 = data[NUM_STUDENTS:, :]
 
 plt.scatter(data2[:, 0], data2[:, 1], c="b", alpha=0.25)
-plt.scatter(data1[:, 0], data1[:, 1], c="r", alpha=0.25)
+plt.scatter(data1[:, 0], data1[:, 1], c="r", alpha=0.25, s=150)
 plt.legend(["Simulated", "Student"])
 plt.title(
     f"Survey respondents ({NUM_STUDENTS}), sub-kernels ({NUM_SUB_KERNELS}), sub-kernel samples ({SAMPLE_PER_STUDENT})"

@@ -39,17 +39,26 @@ def plot(data1, data2, proj=False):
 
 m = 2
 n = 100
-PROJ = True
+PROJ = False
 
-# generate data from exact mBeta
-plt.figure()
 eps = 1
 gamma = eps * np.ones((2**m,))
-gamma[1] = 100
-gamma[2] = 100
+gamma[1] = 1000
+gamma[2] = 1000
 mbeta_e = mBetaExact(gamma)
 theta_es = mbeta_e.sample(n)
 
+# demonstrate unimodality of mBeta
+plt.figure()
+plt.scatter(theta_es[:, 0], theta_es[:, 1], c="r", alpha=0.25)
+plt.xlim((0, 1))
+plt.ylim((0, 1))
+plt.rcParams["text.usetex"] = True
+plt.xlabel("$\\theta_1$", fontsize=16)
+plt.ylabel("$\\theta_2$", fontsize=16)
+
+# generate data from exact mBeta
+plt.figure()
 mbeta_a = infer(theta_es, m)
 theta_as = mbeta_a.sample(n)
 plot(theta_es, theta_as, PROJ)
